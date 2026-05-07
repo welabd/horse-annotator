@@ -1,0 +1,121 @@
+import os
+import asyncio
+import logging
+import numpy as np
+from pathlib import Path
+from typing import List, Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
+
+HORSE_CLASS_ID = 17  # COCO class ID for horse
+CONFIDENCE_THRESHOLD = 0.35
+MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", "yolov8n.pt")
+
+
+class YOLOService:
+    def __init__(self):
+        self.model = None
+        self.model_loaded = False
+
+    async def load_model(self):
+        """Load YOLO model asynchronously."""
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self._load_model_sync)
+
+    def _load_model_sync(self):
+        try:
+            from ultralytics import YOLO
+            logger.info(f"Loading YOLO model: {MODEL_PATH}")
+            self.model = YOLO(MODEL_PATH)
+            self.model_loaded = True
+            logger.info("✅ YOLO model loaded successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to load YOLO model: {e}")
+            self.model_loaded = False
+
+    async def detect_horses(self, image_path: str) -> List[Dict[str, Any]]:
+        """
+        Detect horses in an image.
+        Returns list of detections with normalized YOLO coordinates.
+        """
+        if not self.model_loaded:
+            logger.warning("Model not loaded, attempting reload...")
+            await self.load_model()
+
+        if not self.model_loaded:
+            return []
+
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self._detect_sync, image_path)
+
+    def _detect_sync(self, image_path: str) -> List[Dict[str, Any]]:
+        try:
+            import cv2
+            img = cv2.imread(image_path)
+            if img is None:
+                logger.error(f"Could not read image: {image_path}")
+                return []
+
+            h, w = img.shape[:2]
+            results = self.model(image_path, conf=CONFIDENCE_THRESHOLD, verbose=False)
+            detections = []
+
+            for result in results:
+                boxes = result.boxes
+                if boxes is None:
+                    continue
+
+                for i, box in enumerate(boxes):
+                    cls_id = int(box.cls[0].item())
+
+                    # Filter to horse class (COCO class 17)
+                    if cls_id != HORSE_CLASS_ID:
+                        continue
+
+                    conf = float(box.conf[0].item())
+
+                    # Get normalized xywh (center_x, center_y, width, height)
+                    xywhn = box.xywhn[0].tolist()
+                    cx, cy, bw, bh = xywhn
+
+                    # Also compute pixel coords for frontend display
+                    xyxy = box.xyxy[0].tolist()
+                    x1, y1, x2, y2 = xyxy
+
+                    detections.append({
+                        "id": f"auto_{i}",
+                        "class_id": 0,  # Map to our custom class (0=standing)
+                        "class_name": "standing",
+                        "confidence": round(conf, 3),
+                        # YOLO normalized format
+                        "cx": round(cx, 6),
+                        "cy": round(cy, 6),
+                        "bw": round(bw, 6),
+                        "bh": round(bh, 6),
+                        # Pixel format for editor
+                        "x1_px": round(x1),
+                        "y1_px": round(y1),
+                        "x2_px": round(x2),
+                        "y2_px": round(y2),
+                        "img_width": w,
+                        "img_height": h,
+                        "auto_detected": True
+                    })
+
+            logger.info(f"Detected {len(detections)} horses in {image_path}")
+            return detections
+
+        except Exception as e:
+            logger.error(f"Detection error: {e}", exc_info=True)
+            return []
+
+    def get_model_info(self) -> Dict[str, Any]:
+        return {
+            "loaded": self.model_loaded,
+            "model_path": MODEL_PATH,
+            "horse_class_id": HORSE_CLASS_ID,
+            "confidence_threshold": CONFIDENCE_THRESHOLD
+        }
+
+
+yolo_service = YOLOService()

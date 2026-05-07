@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+venv/
+.venv/
+*.pt
+*.onnx
+
+# Node
+node_modules/
+dist/
+.cache/
+
+# Data
+uploads/*.jpg
+uploads/*.jpeg
+uploads/*.png
+uploads/*.webp
+exports/*.zip
+
+# Keep directories
+!uploads/.gitkeep
+!exports/.gitkeep
+!models/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
