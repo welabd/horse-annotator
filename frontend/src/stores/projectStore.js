@@ -2,7 +2,9 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
 
-const API_BASE = '/api'
+const API_BASE = import.meta.env.VITE_API_BASE
+  ? `${import.meta.env.VITE_API_BASE}/api`
+  : '/api'
 
 export const CLASSES = [
   { id: 0, name: 'standing', color: '#f97316', label: 'Standing', emoji: '🐴' },
