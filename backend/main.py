@@ -21,10 +21,6 @@ for d in ["uploads", "exports", "models"]:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("🐴 Horse Annotator API starting up...")
-    # Pre-load YOLO model
-    from services.yolo_service import yolo_service
-    await yolo_service.load_model()
-    logger.info("✅ YOLO model ready")
     yield
     logger.info("🐴 Horse Annotator API shutting down...")
 
