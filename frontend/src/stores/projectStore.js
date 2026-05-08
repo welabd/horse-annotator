@@ -2,9 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
 
-const API_BASE = import.meta.env.VITE_API_BASE
-  ? `${import.meta.env.VITE_API_BASE}/api`
-  : '/api'
+const API_BASE = '/api'
 
 export const CLASSES = [
   { id: 0, name: 'standing', color: '#f97316', label: 'Standing', emoji: '🐴' },
@@ -90,7 +88,7 @@ export const useProjectStore = create(
           const res = await fetch(`${API_BASE}/detect/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image_id: imageId, filename: image.filename }),
+            body: JSON.stringify({ image_id: imageId, filename: image.filename, url: image.url }),
           })
           const data = await res.json()
 
