@@ -5,5 +5,7 @@ pydantic
 aiofiles
 Pillow
 opencv-python-headless
-ultralytics
 cloudinary
+torch==2.3.0
+torchvision==0.18.0
+ultralytics==8.2.0
