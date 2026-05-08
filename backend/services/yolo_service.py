@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 logger = logging.getLogger(__name__)
 
 HORSE_CLASS_ID = 17
-CONFIDENCE_THRESHOLD = 0.35
+CONFIDENCE_THRESHOLD = float(os.environ.get("DETECTION_CONFIDENCE", "0.15"))
 MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", "yolov8n.pt")
 
 
