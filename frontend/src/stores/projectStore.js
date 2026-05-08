@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
 
-const API_BASE = 'https://horse-annotator.onrender.com/api'
+const API_BASE = 'https://horse-annotator-production.up.railway.app/api'
 
 export const CLASSES = [
   { id: 0, name: 'standing', color: '#f97316', label: 'Standing', emoji: '🐴' },
